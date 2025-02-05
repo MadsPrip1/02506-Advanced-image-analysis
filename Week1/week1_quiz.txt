@@ -1,0 +1,4 @@
+image_convolution: 42
+boundary_length: 10801
+curve_smoothing: 79.92746634036195
+display_name: mp
