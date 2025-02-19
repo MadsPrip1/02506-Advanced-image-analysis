@@ -445,3 +445,33 @@ def Rotation_translation_scale(P, Q):
         return R, t, s
     else:
         return R_T, t_T, s
+    
+def lowe_matches(des1, des2, lowe_threshold=0.6):
+    """
+    Apply Lowe's ratio test to filter good matches.
+
+    Parameters:
+        des1 (numpy.ndarray): Descriptors from the first image.
+        des2 (numpy.ndarray): Descriptors from the second image.
+        lowe_threshold (float): Threshold for Lowe's ratio test to filter good matches.
+
+    Returns:
+        good_matches (list): List of good matches after applying Lowe's ratio test.
+    """
+    
+    # cv.BFMatcher: This is the brute-force matcher. It takes the descriptor of one feature in first set and is matched with all other features in second set using some distance calculation.
+    # cv.NORM_L2: This specifies that we use Euclidean distance (L2 norm) to measure similarity.
+    # crossCheck=False: Allows one-way matching, meaning we consider all potential matches without requiring mutual agreement.
+    bf = cv.BFMatcher(cv.NORM_L2, crossCheck=False)
+
+    # knnMatch() finds the two closest matches (best and second-best) for each descriptor in des1 from des2.
+    matches = bf.knnMatch(des1, des2, k=2)        
+
+    # Apply Lowe's ratio test to select good matches
+    # m is the best match and n is the second best match to a given keypoint
+    good_matches = []
+    for m, n in matches:                            # m is the best match and n is the second best match
+        if m.distance < lowe_threshold * n.distance:  # If the distance of the best match is less than the ratio times the distance of the second best match
+            good_matches.append(m)   
+    
+    return good_matches
