@@ -1,0 +1,4 @@
+keypoint_number: 375
+scale: 0.36853474378585815
+translation_length: 539.77203
+display_name: mp

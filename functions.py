@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.ndimage import convolve
 from scipy.linalg import circulant
+import cv2 as cv
 
 ############################ Week 1 ##########################################
 
@@ -475,3 +476,76 @@ def lowe_matches(des1, des2, lowe_threshold=0.6):
             good_matches.append(m)   
     
     return good_matches
+
+
+
+
+
+
+################################## Week 5 ###########################################
+
+## 5.2 Task
+
+def get_gray_image_255(image_path):
+    """
+    Converts an image path to a grayscale image in uint8 format.
+
+    Parameters:
+        image_path (str): The image path.
+
+    Returns:
+        numpy.ndarray: The grayscale image as a uint8 array (0-255).
+    """
+    image = skimage.io.imread(image_path)
+    return skimage.img_as_ubyte(image)
+
+
+def compute_V1(D, S, mu):
+    """
+    Computes the V1 energy term as the sum of squared differences between 
+    the original grayscale image D and the intensity-realized version of S.
+
+    Parameters:
+        D (numpy.ndarray): The original grayscale image.
+        S (numpy.ndarray): The segmentation (labels for each pixel).
+        mu (dict): A dictionary mapping labels to mean intensities.
+
+    Returns:
+        float: The computed V1 energy.
+    """
+    # Create the intensity-realized image of S
+    intensity_realized_S = np.vectorize(mu.get)(S) #Maps where the value of S is the key in mu to the value in mu which is the mean intensity of the label
+    
+    # Compute sum of squared differences
+    V1 = np.sum((D - intensity_realized_S) ** 2)
+    
+    return V1
+
+def compute_V2(S, beta):
+    """
+    Computes the V2 energy term as the sum of differences between neighboring pixels."
+    """
+    check_vertically   = beta*np.sum((S[1:, :] != S[:-1,:])) #Check if the pixel below is different from the pixel above
+    check_horizontally = beta*np.sum((S[:, 1:] != S[:,:-1]))
+    return check_vertically + check_horizontally
+
+def compute_V1_and_V2(D, S, mu, beta, print_output=True):
+    """
+    Computes the V1 and V2 energy terms for a given segmentation.
+
+    Parameters:
+        D (numpy.ndarray): The original grayscale image.
+        S (numpy.ndarray): The segmentation (labels for each pixel).
+        mu (dict): A dictionary mapping labels to mean intensities.
+        beta (float): The weight for the V2 term.
+
+    Returns:
+        tuple: A tuple containing the computed V1 and V2 energies.
+    """
+    V1 = compute_V1(D, S, mu)
+    V2 = compute_V2(S, beta)
+    if print_output:
+        print(f'The likelihood energy term V1 is: {V1}')
+        print(f'The prior term V2 is: {V2}')
+        print(f'The posterior energy term V1+V2 is: {V1 + V2}')
+    return V1, V2

@@ -1,0 +1,4 @@
+features_size: 2545200
+cluster_probability: 0.26
+dominant_segmentation: 3
+display_name: mp
