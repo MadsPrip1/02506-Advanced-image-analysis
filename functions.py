@@ -1,9 +1,11 @@
+import cv2 as cv
 import skimage.io
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.ndimage import convolve
 from scipy.linalg import circulant
-import cv2 as cv
+from scipy.signal import find_peaks
+
 
 ############################ Week 1 ##########################################
 
@@ -549,3 +551,93 @@ def compute_V1_and_V2(D, S, mu, beta, print_output=True):
         print(f'The prior term V2 is: {V2}')
         print(f'The posterior energy term V1+V2 is: {V1 + V2}')
     return V1, V2
+
+def get_gray_image_float(image_path):
+    """
+    Converts an image path to a grayscale image in float format.
+
+    Parameters:
+        image_path (str): The image path.
+
+    Returns:
+        numpy.ndarray: The grayscale image as a float array.
+    """
+    image = skimage.io.imread(image_path)
+    return skimage.img_as_float(image)
+
+def markov_segmentation(image, mu, beta):
+    """
+    Perform Markov Random Field segmentation on the given image.
+
+    Parameters:
+        image (numpy.ndarray): The input grayscale image to be segmented.
+        mu (list): A list containing the mean intensities for the two classes.
+        beta (float): The parameter controlling the smoothness of the segmentation.
+
+    Returns:
+        numpy.ndarray: The segmented image with labels for each pixel.
+    """
+    
+    d = image.flatten()
+
+    # Create a graph with integer capacities.
+    g = maxflow.Graph[float]()
+
+    # Add (non-terminal) nodes and retrieve an index for each node.
+    nodes = g.add_nodes(len(d))
+
+    # Create edges between nodes, that is equal to beta
+    for i in range(len(d)-1):
+        g.add_edge(nodes[i], nodes[i+1], beta, beta)
+
+    # Set the capacities of the terminal edges.
+    for i in range(len(d)):
+        g.add_tedge(nodes[i], (d[i] - mu[1]) ** 2, (d[i] - mu[0]) ** 2)
+
+    # Run the max flow algorithm.
+    flow = g.maxflow()
+
+    # Get the result as integer labels.
+    labeling = [g.get_segment(n) for n in nodes]
+    return np.array(labeling).reshape(image.shape)
+
+def compute_and_plot_histogram(image, bins=256, num_max=1, tick_interval=0.05):
+    """
+    Compute the histogram of the input image, plot it, and return the histogram image and locations of local maxima.
+
+    Parameters:
+        image (numpy.ndarray): The input grayscale image.
+        bins (int): The number of bins in the histogram.
+        num_max (int): The number of local maxima to find.
+
+    Returns:
+        tuple: A tuple containing the indices of local maxima in the histogram.
+    """
+    # Compute the histogram
+    hist, bin_edges = np.histogram(image.flatten(), bins=bins, range=(0, 1))
+    
+    # Find local maxima using scipy's find_peaks function
+    local_maxima_indices, _ = find_peaks(hist)
+    
+    # Sort the local maxima by their heights (histogram values) in descending order
+    local_maxima_indices = sorted(local_maxima_indices, key=lambda idx: hist[idx], reverse=True)
+    
+    # Select the top `num_max` local maxima
+    local_maxima_indices = local_maxima_indices[:num_max]
+    
+    # Plot the histogram
+    fig, ax = plt.subplots(figsize=(10, 5))
+    ax.bar(bin_edges[:-1], hist, width=np.diff(bin_edges), edgecolor='black', align='edge')
+    ax.set_xlabel('Intensity Value')
+    ax.set_ylabel('Frequency')
+    ax.set_title('Histogram of the Image')
+    x_ticks = np.arange(0.0, 1.05, tick_interval)  # Generate ticks from 0.0 to 1.0 with the given interval
+    ax.set_xticks(x_ticks)  # Set the x-axis ticks
+    
+    # Mark the local maxima on the histogram
+    ax.plot(bin_edges[local_maxima_indices], hist[local_maxima_indices], 'ro', label=f'Local Maxima')
+    plt.legend()
+    plt.show()
+
+    return bin_edges[local_maxima_indices]
+
