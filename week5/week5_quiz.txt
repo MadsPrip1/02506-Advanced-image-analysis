@@ -1,0 +1,4 @@
+prior_maxlikelihood: 140
+likelihood_rows: 365
+posterior_stripes: 139
+display_name: mp
