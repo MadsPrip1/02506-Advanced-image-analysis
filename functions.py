@@ -552,6 +552,7 @@ def compute_V1_and_V2(D, S, mu, beta, print_output=True):
         print(f'The posterior energy term V1+V2 is: {V1 + V2}')
     return V1, V2
 
+
 def get_gray_image_float(image_path):
     """
     Converts an image path to a grayscale image in float format.
@@ -562,8 +563,16 @@ def get_gray_image_float(image_path):
     Returns:
         numpy.ndarray: The grayscale image as a float array.
     """
+    # Read the image
     image = skimage.io.imread(image_path)
+
+    # Check if the image is RGB and convert to grayscale if necessary
+    if image.ndim == 3 and image.shape[2] == 3:
+        image = skimage.color.rgb2gray(image)
+
+    # Convert the image to float format
     return skimage.img_as_float(image)
+
 
 def markov_segmentation(image, mu, beta):
     """
