@@ -1,0 +1,4 @@
+inside_area: 31415.926535897932
+f_ext: 0.4284831687334201
+external_energy: 28763.793867469445
+display_name: mp
