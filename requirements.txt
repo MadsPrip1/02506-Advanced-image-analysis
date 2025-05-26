@@ -6,3 +6,4 @@ scikit-learn==1.6.1
 PyMaxflow==1.3.2
 imageio==2.37.0 
 imageio[ffmpeg]
+slgbuilder

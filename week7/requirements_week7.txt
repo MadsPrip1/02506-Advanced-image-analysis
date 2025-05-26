@@ -1,0 +1,13 @@
+# Make this with python 3.9 else the slgbuilder will not work
+matplotlib
+scikit-image
+slgbuilder
+
+numpy 
+matplotlib 
+scipy==1.09
+opencv-python
+scikit-learn 
+PyMaxflow
+imageio 
+imageio[ffmpeg]
